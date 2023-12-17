@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    Int @id @default(autoincrement())
+  fullname              String
+  email                 String @unique
+  password              String
+  role                  String @default("customer")
+  orders                Order[]
+  importReceipts        ImportReceipt[]
+}
+
+model Category {
+  id                    Int @id @default(autoincrement())
+  name                  String
+  image                 String
+  description           String
+  products              Product[]
+}
+
+model Product {
+  id                    Int @id @default(autoincrement())
+  name                  String
+  description           String
+  category              Category @relation(fields: [categoryId], references: [id])
+  categoryId            Int
+  price                 Float
+  image                 String
+  productVariations     ProductVariation[]
+}
+
+model ProductVariation {
+  id                    Int @id @default(autoincrement())
+  product               Product @relation(fields: [productId], references: [id])
+  productId             Int
+  sku                   String
+  qty                   Int
+  options               Option[]
+}
+
+model Option {
+  id                    Int @id @default(autoincrement())
+  productVariation      ProductVariation @relation(fields: [productVariationId], references: [id])
+  productVariationId    Int
+  optionName            String
+  optionValues          OptionValue[]
+}
+
+model OptionValue {
+  id                    Int @id @default(autoincrement())
+  option                Option @relation(fields: [optionId], references: [id])
+  optionId              Int
+  value                 String
+}
+
+model Order {
+  id                    Int @id @default(autoincrement())
+  date                  DateTime
+  status                Boolean
+  total                 Float
+  customer              User @relation(fields: [customerId], references: [id])
+  customerId            Int
+  orderLines            OrderLine[]
+}
+
+model OrderLine {
+  id                    Int @id @default(autoincrement())
+  order                 Order @relation(fields: [orderId], references: [id])
+  orderId               Int
+  productId             Int
+  qty                   Int
+  price                 Float
+}
+
+model ImportReceipt {
+  id                    Int @id @default(autoincrement())
+  date                  DateTime
+  status                Boolean
+  total                 Float
+  staff                 User @relation(fields: [staffId], references: [id])
+  staffId               Int
+  importReceiptLines    ImportReceiptLine[]
+}
+
+model ImportReceiptLine {
+  id                    Int @id @default(autoincrement())
+  importReceipt         ImportReceipt @relation(fields: [importReceiptId], references: [id])
+  importReceiptId       Int
+  productId             Int
+  qty                   Int
+  price                 Float
+}
